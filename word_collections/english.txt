@@ -8536,7 +8536,6 @@ lucid
 lucky
 lucks
 lucre
-luddy
 luffa
 luffs
 luger
@@ -8549,7 +8548,6 @@ lukas
 luket
 lulab
 lulav
-lully
 lulls
 lulus
 lumen
@@ -13576,7 +13574,6 @@ suine
 suing
 suint
 suyog
-suist
 suite
 suity
 suits
