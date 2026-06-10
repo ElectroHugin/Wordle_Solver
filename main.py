@@ -1,385 +1,208 @@
 # -*- coding: utf-8 -*-
+"""Wordle Solver — interactive CLI.
 
-#import sys
-import random
+Usage:
+    python main.py                # interactive language selection
+    python main.py -l german     # start directly in German
+    python main.py -l english -n 8   # show 8 suggestions per round
+"""
 
-class Wordle:
-    def __init__(self, word_length, lang, use_weight = False):
-        self.word_length = word_length
-        self.lang = lang
-        self.word_list = self.read_wordlist('word_collections/')
-        self.round = 0
-        self.game_over = False
-        self.use_weight = use_weight
-        
-        self.green_word = ['_', '_', '_', '_', '_']
-        self.yellow_letters_tuple = []
-        self.yellow_letters_set = set([])
-        self.gray_letters = []
-        
-        self.letters = ['Q', 'W', 'E', 'R', 'T', 'Z', 'U', 'I', 'O', 'P',
-                               'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L',
-                               'Y', 'X', 'C', 'V', 'B', 'N', 'M']
-        
-    
-        
-    def read_wordlist(self, path):
-        word_list = []
-        with open(path + self.lang + '.txt', 'r') as wordfile:
-            line = wordfile.readline()
-            while line != "":
-                if len(line) == (self.word_length + 1):
-                    line_upper = line.upper()
-                    line_as_list = [*line_upper]
-                    line_as_list.pop()
-                    word_list.append(line_as_list)
-                line = wordfile.readline()
-        return word_list
-    
-    
-    def get_start_words(self):
-        if self.lang == 'german':
-            return ['RITEN', 'RATEN', 'ARSEN', 'STEIN']
-        elif self.lang == 'english':
-            return ['SALET', 'SLATE', 'CRANE', 'SLANT', 'CRATE', 'CARTE']
-        
-    
-    def show_interface(self, use_word):
-        self.round += 1
-        if self.round > 500:
-            self.game_over = True
-            return
-        return "Try:" + "".join(use_word).upper() + " > "
-        
-        
-    def read_answer(self, use_word):
-        answer = str(input())
-        
-        if answer == '+++++' or answer == "end" or answer == "End":
-            self.game_over = True
-            return "Round won!"
-        
-        elif answer == 'N' or answer == "" or answer == 'WNF':
-            return "Calculating new word..."
-        
-        elif len(answer) != 5:
-            return "Invalid input."
-        
-        answer_list = [*answer]
-        
-        for pos in range(self.word_length):
-            if answer_list[pos] == '+':
-                #print('gruen:' + use_word[pos])
-                self.green_word[pos] = use_word[pos]
-                
-            elif answer_list[pos] == '=':
-                #print('gelb:' + use_word[pos])
-                self.yellow_letters_tuple.append((use_word[pos], pos))
-                self.yellow_letters_set.add(use_word[pos])
-                
-            elif answer_list[pos] == '-':
-                #print('grau:' + use_word[pos])
-                self.gray_letters.append(use_word[pos])
-            elif answer_list[pos] == '?':
-                pass
-            else:
-                return "Invalid Symbol"
-        return "Calculating new word..."
-                
-                
-    def letter_value(self, letter):
-        if letter == 'E':
-            if self.lang == 'german':
-                return 17.4
-            elif self.lang == 'english':
-                return 11.0
-        elif letter == 'N':
-            if self.lang == 'german':
-                return 9.78
-            elif self.lang == 'english':
-                return 7.2
-        elif letter == 'I':
-            if self.lang == 'german':
-                return 7.55
-            elif self.lang == 'english':
-                return 8.6
-        elif letter == 'S':
-            if self.lang == 'german':
-                return 7.27
-            elif self.lang == 'english':
-                return 8.7
-        elif letter == 'R':
-            if self.lang == 'german':
-                return 7.0
-            elif self.lang == 'english':
-                return 7.3
-        elif letter == 'A':
-            if self.lang == 'german':
-                return 6.51
-            elif self.lang == 'english':
-                return 7.8
-        elif letter == 'T':
-            if self.lang == 'german':
-                return 6.15
-            elif self.lang == 'english':
-                return 6.7   
-        elif letter == 'D':
-            if self.lang == 'german':
-                return 5.08
-            elif self.lang == 'english':
-                return 3.8   
-        elif letter == 'H':
-            if self.lang == 'german':
-                return 4.76
-            elif self.lang == 'english':
-                return 2.3     
-        elif letter == 'U':
-            if self.lang == 'german':
-                return 4.35
-            elif self.lang == 'english':
-                return 3.3     
-        elif letter == 'L':
-            if self.lang == 'german':
-                return 3.44
-            elif self.lang == 'english':
-                return 5.3   
-        elif letter == 'C':
-            if self.lang == 'german':
-                return 3.06
-            elif self.lang == 'english':
-                return 4.0
-        elif letter == 'G':
-            if self.lang == 'german':
-                return 3.01
-            elif self.lang == 'english':
-                return 3.0
-        elif letter == 'M':
-            if self.lang == 'german':
-                return 2.53
-            elif self.lang == 'english':
-                return 2.7
-        elif letter == 'O':
-            if self.lang == 'german':
-                return 2.51
-            elif self.lang == 'english':
-                return 6.1    
-        elif letter == 'B':
-            if self.lang == 'german':
-                return 1.89
-            elif self.lang == 'english':
-                return 2.0
-        elif letter == 'W':
-            if self.lang == 'german':
-                return 1.89
-            elif self.lang == 'english':
-                return 0.91 
-        elif letter == 'F':
-            if self.lang == 'german':
-                return 1.66
-            elif self.lang == 'english':
-                return 0.0  
-        elif letter == 'K':
-            if self.lang == 'german':
-                return 1.21
-            elif self.lang == 'english':
-                return 0.97
-        elif letter == 'Z':
-            if self.lang == 'german':
-                return 1.13
-            elif self.lang == 'english':
-                return 0.44  
-        elif letter == 'P':
-            if self.lang == 'german':
-                return 0.79
-            elif self.lang == 'english':
-                return 2.8 
-        elif letter == 'V':
-            if self.lang == 'german':
-                return 0.67
-            elif self.lang == 'english':
-                return 1.0 
-        elif letter == 'J':
-            if self.lang == 'german':
-                return 0.27
-            elif self.lang == 'english':
-                return 0.21  
-        elif letter == 'Y':
-            if self.lang == 'german':
-                return 0.04
-            elif self.lang == 'english':
-                return 1.6  
-        elif letter == 'X':
-            if self.lang == 'german':
-                return 0.03
-            elif self.lang == 'english':
-                return 0.27  
-        elif letter == 'Q':
-            if self.lang == 'german':
-                return 0.02
-            elif self.lang == 'english':
-                return 0.19
-        else:
-            return 0.0
-        
-    
-    
-    def calc_next_word(self, start = False):
-        
-        next_word_list = []
-        
-        if start:
-            next_word_list = self.get_start_words()
-        else:
-            for word in self.word_list:
-                    
-                word_invalid = False
-                debug_word = ''
-                if "".join(word) == debug_word:
-                    print("YES WORD FOUND!")
-                
-                for pos in range(self.word_length):
-                    
-                    if word[pos] in self.gray_letters:
-                        
-                        if word[pos] in self.green_word and word[pos] in self.yellow_letters_set:
-                            count_letter_allowed = self.count_letter(word[pos], self.green_word) + 1
-                        
-                        elif word[pos] in self.green_word and word[pos] not in self.yellow_letters_set:
-                            count_letter_allowed = self.count_letter(word[pos], self.green_word)
-                      
-                        elif word[pos] not in self.green_word and word[pos] in self.yellow_letters_set:
-                            count_letter_allowed = 1
-                            
-                        else:
-                            count_letter_allowed = 0
-                            
-                        count_letter_word = self.count_letter(word[pos], word)
-                        
-                        if count_letter_word > count_letter_allowed:
-                            if "".join(word) == debug_word:
-                                print("I want to use the word " + "".join(word) + " but it has too many grey letters!")
-                            word_invalid = True
-                            
+import argparse
+import sys
 
-                #    if word[pos] not in self.green_word and word[pos] not in self.yellow_letters_set and word[pos] in self.gray_letters:
-                #        if "".join(word) == debug_word:
-                #            print("Ich will das Wort " + "".join(word) + " benutzen, aber es enthält graue Buchstaben!")
-                #        word_invalid = True
-                        
-                    if self.yellow_letters_set:
-                        if (all(letter in word for letter in self.yellow_letters_set)):
-                            pass
-                        else:
-                            if "".join(word) == debug_word:
-                                print("I want to use the word " + "".join(word) + " but it has NO yellow letters!")
-                            word_invalid = True
-                            
-                    #elif self.yellow_letters_set and word[pos] not in self.yellow_letters_set:
-                    #    if "".join(word) == debug_word:
-                    #        print("Ich will das Wort " + "".join(word) + " benutzen, aber es hat gelbe Buchstaben NICHT!")
-                    #    word_invalid = True
-                        
-                    if self.green_word[pos] != '_' and word[pos] != self.green_word[pos]:
-                        if "".join(word) == debug_word:
-                            print("I want to use the word " + "".join(word) + " but the green letters are on the wrong position!")
-                        word_invalid = True
-                    
-                for letter_tuple in self.yellow_letters_tuple:
-                    letter, pos = letter_tuple
-                    if word[pos] == letter:
-                        if "".join(word) == debug_word:
-                            print("I want to use the word " + "".join(word) + " but it has yellow letters on incorrect places!")
-                        word_invalid = True
-                    
-                if word_invalid:
-                    continue
-                
-                if not word_invalid:
-                    next_word_list.append(word)
+from solver import WordleSolver, GREEN, YELLOW, GRAY, ENTROPY_LIMIT
+from wordlist import load_word_list, load_guess_pool, LANGUAGES, WORD_LENGTH
 
-        
-        if not self.use_weight and len(next_word_list) > 0:
-            next_word = next_word_list[random.randint(0, len(next_word_list)-1)]
-            return "".join(next_word)
-            
-        elif self.use_weight and len(next_word_list) > 0:
-            weighted_list = self.calc_weight_word(next_word_list)
-            next_word = random.choices(next_word_list, weights=weighted_list, k=1)[0]
-            return "".join(next_word)
-        else:
-            return None
-        
-    def count_letter(self, letter, word):
-        count = 0
-        for let in word:
-            if let == letter:
-                count += 1
-        return count
-        
-    
-    def calc_weight_word(self, word_array):
-        # einbauen doppelte Buchstaben bestrafen
-        weights = []
-        used_letters = []
-        for word in word_array:
-            weight = 0.0
-            for letter in word:
-                if letter not in used_letters:
-                    weight += self.letter_value(letter)
-                else:
-                    weight += (self.letter_value(letter)/5)
-                used_letters.append(letter)  
-            weights.append(weight)
-        return weights
-        
-        
-    def check_game_over(self):
-        return self.game_over
-    
-    
-    def welcome_text(self):
-        text = "Welcome to Wordle-Solver!\n"
-        text += "You can use these symbols as input: + = -\n"
-        text += "+ : Use this if the letter is green/at the correct position\n"
-        text += "= : WUse this if the letter is yellow/not correct position\n"
-        text += "- : Use this if the letter is gray/not in the word"
-        return text
-    
-    def debug_mode(self):
-        print(self.green_word)
-        print(self.yellow_letters_tuple)
-        print(self.gray_letters)
-    
-        
+# --- ANSI rendering ---------------------------------------------------------
+
+RESET = "\033[0m"
+BOLD = "\033[1m"
+DIM = "\033[2m"
+TILE = {
+    GREEN: "\033[1;97;42m",   # white on green
+    YELLOW: "\033[1;30;43m",  # black on yellow
+    GRAY: "\033[1;97;100m",   # white on gray
+}
+
+FEEDBACK_CHARS = {
+    "g": GREEN, "+": GREEN,
+    "y": YELLOW, "=": YELLOW,
+    "x": GRAY, "-": GRAY, "b": GRAY,
+}
+
+
+def render_guess(guess, pattern):
+    """Render a guess as colored tiles, e.g. a Wordle row."""
+    return "".join(f"{TILE[p]} {c.upper()} {RESET}" for c, p in zip(guess, pattern))
+
+
+def parse_feedback(text):
+    """Parse a feedback string like 'gyxxg' or '+=--+' into a pattern tuple."""
+    text = text.strip().lower()
+    if len(text) != WORD_LENGTH:
+        return None
+    try:
+        return tuple(FEEDBACK_CHARS[c] for c in text)
+    except KeyError:
+        return None
+
+
+HELP_TEXT = f"""
+{BOLD}Commands{RESET}
+  <feedback>      5 characters describing the colors of the last guess:
+                    g or +  green  (correct position)
+                    y or =  yellow (wrong position)
+                    x or -  gray   (not in the word)
+                  Example: gxyxg
+  ggggg / win     mark the puzzle as solved
+  <word>          you played a different 5-letter word — tell the solver
+  list            show all remaining candidate words
+  next            show the next batch of suggestions
+  undo            revert the last feedback
+  help            show this help
+  quit            exit
+"""
+
+
+def choose_language():
+    print("Choose a language / Sprache wählen:")
+    for i, lang in enumerate(LANGUAGES, 1):
+        print(f"  {i}) {lang}")
+    while True:
+        choice = input("> ").strip().lower()
+        if choice in LANGUAGES:
+            return choice
+        if choice.isdigit() and 1 <= int(choice) <= len(LANGUAGES):
+            return LANGUAGES[int(choice) - 1]
+        print("Invalid choice, try again.")
+
+
+def print_suggestions(solver, top_n):
+    n = len(solver.candidates)
+    if not solver.history:
+        mode = "opening book"
+    elif n > ENTROPY_LIMIT:
+        mode = "frequency ranking"
+    else:
+        mode = "entropy ranking"
+    print(f"\n{BOLD}{n}{RESET} candidate{'s' if n != 1 else ''} remaining "
+          f"{DIM}({mode}){RESET}")
+
+    suggestions = solver.suggest(top_n)
+    for rank, (word, score, remaining) in enumerate(suggestions, 1):
+        line = f"  {rank}) {BOLD}{word.upper()}{RESET}"
+        if score is not None:
+            line += f"  {DIM}{score:.2f} bits"
+            if remaining is not None:
+                line += f", ~{remaining:.0f} words left after guess"
+            line += RESET
+        print(line)
+    return suggestions
+
+
 def main():
-    
-    solver = Wordle(word_length=5, lang='english', use_weight=True)
+    parser = argparse.ArgumentParser(description="Interactive Wordle solver.")
+    parser.add_argument("-l", "--lang", choices=LANGUAGES,
+                        help="word list language (default: ask)")
+    parser.add_argument("-n", "--top", type=int, default=5,
+                        help="number of suggestions per round (default: 5)")
+    args = parser.parse_args()
 
-    print(solver.welcome_text())
-    
-    start_round = True
-    while(not solver.check_game_over()):
-    
-        word = solver.calc_next_word(start_round)
-        start_round = False
-        
-        if word == None:
-            solver.game_over = True
-            print("No word found!")
-            solver.debug_mode()
+    lang = args.lang or choose_language()
+    words = load_word_list(lang)
+    guess_pool = load_guess_pool(lang)
+    solver = WordleSolver(words, lang, guess_pool)
+    word_set = set(guess_pool)
+
+    print(f"\n{BOLD}Wordle Solver{RESET} — {lang}, "
+          f"{len(words)} solutions / {len(guess_pool)} guessable words loaded.")
+    print(HELP_TEXT)
+
+    current_guess = None
+    while True:
+        suggestions = print_suggestions(solver, args.top)
+        if not solver.candidates:
+            print("No candidates left — some feedback was inconsistent. "
+                  "Use 'undo' to step back.")
+        elif len(solver.candidates) == 1:
+            print(f"\nThe word must be {render_guess(solver.candidates[0], (GREEN,) * WORD_LENGTH)} 🎉")
+
+        if suggestions:
+            current_guess = suggestions[0][0]
+            print(f"\nPlay {BOLD}{current_guess.upper()}{RESET} "
+                  f"(or pick another / type your own), then enter the feedback.")
+
+        command = input("> ").strip().lower()
+
+        if command in ("quit", "exit", "q"):
             break
-        
-        print(solver.show_interface(word))
-        print(solver.read_answer(word))
-    
-    input()
+
+        elif command in ("help", "h", "?"):
+            print(HELP_TEXT)
+
+        elif command == "undo":
+            if solver.undo():
+                print("Reverted last feedback.")
+            else:
+                print("Nothing to undo.")
+
+        elif command == "list":
+            for word in sorted(solver.candidates):
+                print(" ", word)
+
+        elif command in ("next", "n", ""):
+            continue  # loop reprints suggestions; 'next' could page in future
+
+        elif command in ("win", "ggggg", "+++++"):
+            print(f"\n{render_guess(current_guess or 'great', (GREEN,) * WORD_LENGTH)}")
+            print("Solved! 🎉")
+            break
+
+        elif command.isdigit() and suggestions and 1 <= int(command) <= len(suggestions):
+            current_guess = suggestions[int(command) - 1][0]
+            print(f"Selected {BOLD}{current_guess.upper()}{RESET}. Now enter the feedback.")
+            feedback_input(solver, current_guess)
+
+        elif parse_feedback(command):
+            if current_guess is None:
+                print("No active guess — type the word you played first.")
+                continue
+            pattern = parse_feedback(command)
+            solver.apply_feedback(current_guess, pattern)
+            print(render_guess(current_guess, pattern))
+            if all(p == GREEN for p in pattern):
+                print("Solved! 🎉")
+                break
+
+        elif len(command) == WORD_LENGTH and command.isalpha():
+            if command not in word_set:
+                print(f"'{command}' is not in the {lang} word list — using it anyway.")
+            current_guess = command
+            print(f"Guess set to {BOLD}{command.upper()}{RESET}. Now enter the feedback.")
+            feedback_input(solver, current_guess)
+
+        else:
+            print("Unrecognized input. Type 'help' for commands.")
+
+
+def feedback_input(solver, guess):
+    """Prompt until valid feedback for `guess` is entered (or skipped)."""
+    while True:
+        raw = input(f"feedback for {guess.upper()} > ").strip().lower()
+        if raw in ("", "skip", "cancel"):
+            print("Skipped.")
+            return
+        pattern = parse_feedback(raw)
+        if pattern is None:
+            print("Invalid feedback — use 5 characters from g/y/x (or +/=/-).")
+            continue
+        solver.apply_feedback(guess, pattern)
+        print(render_guess(guess, pattern))
+        if all(p == GREEN for p in pattern):
+            print("Solved! 🎉")
+            sys.exit(0)
+        return
 
 
 if __name__ == "__main__":
     main()
-
-
-
-
-    
-

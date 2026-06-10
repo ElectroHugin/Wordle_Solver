@@ -1,1 +1,1 @@
-beaupy
+# No external dependencies — pure Python 3 standard library.

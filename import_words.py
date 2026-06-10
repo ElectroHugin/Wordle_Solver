@@ -1,17 +1,43 @@
-file_from = ''
-file_to = ''
+# -*- coding: utf-8 -*-
+"""Import a raw dictionary dump into a cleaned word list.
 
-word_list = []
+Usage:
+    python import_words.py raw_dictionary.txt word_collections/german.txt
 
-with open(file_from, 'r') as word_file:
-    lines = word_file.readlines()
-    for word in lines:
-        word = word[:-1]
-        if len(word) == 5:
-            word_list.append(word)
+Normalizes to lowercase, strips CR/LF and whitespace, keeps only ASCII
+alphabetic words of the target length, and removes duplicates.
+"""
 
-with open(file_to, 'w') as word_file:
-       for word in word_list:
-            word_file.write(word + '\n')
+import argparse
 
 
+def import_words(source, target, length=5):
+    seen = set()
+    words = []
+    with open(source, "r", encoding="utf-8") as f:
+        for line in f:
+            word = line.strip().lower()
+            if len(word) == length and word.isascii() and word.isalpha():
+                if word not in seen:
+                    seen.add(word)
+                    words.append(word)
+
+    words.sort()
+    with open(target, "w", encoding="utf-8", newline="\n") as f:
+        f.write("\n".join(words) + "\n")
+    return len(words)
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("source", help="raw dictionary file (one word per line)")
+    parser.add_argument("target", help="output word list file")
+    parser.add_argument("--length", type=int, default=5, help="word length (default: 5)")
+    args = parser.parse_args()
+
+    count = import_words(args.source, args.target, args.length)
+    print(f"Wrote {count} unique {args.length}-letter words to {args.target}")
+
+
+if __name__ == "__main__":
+    main()
